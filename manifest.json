@@ -1,0 +1,31 @@
+{
+  "name": "వివిధ రకాల మంత్రాలు",
+  "short_name": "మంత్రాలు",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#8e44ad",
+  "theme_color": "#9b59b6",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-om-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-om-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-pray-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-pray-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
