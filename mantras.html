@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>వివిధ రకాల మంత్రాలు</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #8e44ad, #9b59b6);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: start;
+      padding-top: 40px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 25px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(10px);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    select, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      background: #f3e5f5;
+      color: #333;
+    }
+
+    textarea {
+      resize: none;
+      min-height: 60px;
+      line-height: 1.5;
+      overflow: hidden;
+    }
+
+    .counter {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .counter button {
+      background: #7e57c2;
+      color: white;
+      font-size: 20px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .counter span {
+      font-size: 24px;
+      margin: 0 20px;
+      width: 40px;
+      text-align: center;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background-color: #6a1b9a;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .log {
+      margin-top: 25px;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 15px;
+      border-radius: 10px;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .log-entry {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      font-size: 15px;
+    }
+
+    @media (max-width: 480px) {
+      h2 {
+        font-size: 20px;
+      }
+
+      button {
+        font-size: 14px;
+        padding: 10px;
+      }
+
+      .counter span {
+        font-size: 20px;
+        margin: 0 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>వివిధ రకాల మంత్రాలు</h2>
+
+    <select id="presetOptions" onchange="selectPreset()">
+      <option value="">-- మంత్రాన్ని ఎంచుకోండి --</option>
+    </select>
+
+    <textarea id="description" placeholder="లేదా మీ స్వంత మంత్రాన్ని టైప్ చేయండి..." oninput="autoResize(this)"></textarea>
+
+    <button onclick="addToDropdown()">⬇️ జాబితాలోకి జోడించు</button>
+
+    <div class="counter">
+      <button onclick="changeCount(-1)">-</button>
+      <span id="countDisplay">0</span>
+      <button onclick="changeCount(1)">+</button>
+    </div>
+
+    <button id="done" onclick="logEntry()">Done</button>
+    <button id="download" style="display:none;" onclick="downloadLogs()">Download & Clear Logs</button>
+
+    <div class="log" id="logArea"></div>
+  </div>
+
+  <script>
+    let count = 0;
+    const MAX_LOGS = 50;
+    const STORAGE_KEY = 'mantraLogs';
+    const DROPDOWN_KEY = 'customMantras';
+    const countDisplay = document.getElementById("countDisplay");
+
+    const defaultMantras = [
+      {
+        title: "వారాహి మంత్రం",
+        text: "ఓం భక్త పరిపాలితే వారాహీ దేవ్యై నమో నమః"
+      },
+      {
+        title: "మహా మృత్యుంజయ మంత్రం",
+        text: "ఓం త్ర్యంబకం యజామహే సుగంధిం పుష్టివర్ధనమ్| ఉర్వారుకమివ బంధనాన్ మృత్యూర్ముక్షీయ మామృతాత్||"
+      },
+      {
+        title: "గాయత్రీ మంత్రం",
+        text: "ఓం భూర్భువస్సువః తత్సవితుర్వరేణ్యం భర్గో దేవస్య ధీమహి ధియోయోనః ప్రచోదయాత్"
+      }
+    ];
+
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = (el.scrollHeight) + 'px';
+    }
+
+    function loadDropdown() {
+      const saved = JSON.parse(localStorage.getItem(DROPDOWN_KEY)) || [];
+      const all = [...defaultMantras, ...saved];
+      const dropdown = document.getElementById("presetOptions");
+      dropdown.innerHTML = '<option value="">-- మంత్రాన్ని ఎంచుకోండి --</option>';
+      all.forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item.text;
+        opt.textContent = item.title;
+        dropdown.appendChild(opt);
+      });
+    }
+
+    function selectPreset() {
+      const text = document.getElementById("presetOptions").value;
+      const desc = document.getElementById("description");
+      desc.value = text;
+      autoResize(desc);
+    }
+
+    function addToDropdown() {
+      const text = document.getElementById("description").value.trim();
+      if (!text) return alert("దయచేసి మంత్రాన్ని టైప్ చేయండి.");
+      const title = prompt("ఈ మంత్రానికి శీర్షిక ఇవ్వండి:");
+      if (!title) return;
+
+      const newMantra = { title, text };
+      const existing = JSON.parse(localStorage.getItem(DROPDOWN_KEY)) || [];
+      existing.push(newMantra);
+      localStorage.setItem(DROPDOWN_KEY, JSON.stringify(existing));
+      loadDropdown();
+      alert("జాబితాలోకి జోడించబడింది!");
+    }
+
+    function changeCount(delta) {
+      count += delta;
+      if (count < 0) count = 0;
+      countDisplay.innerText = count;
+    }
+
+    function logEntry() {
+      const desc = document.getElementById("description").value.trim();
+      if (!desc) return alert("దయచేసి మంత్రాన్ని నమోదు చేయండి.");
+
+      const date = new Date().toLocaleString();
+      const entryText = `${date} — "${desc}" [Count: ${count}]`;
+      addToLogArea(entryText);
+      saveLog(entryText);
+
+      document.getElementById("description").value = "";
+      document.getElementById("presetOptions").value = "";
+      autoResize(document.getElementById("description"));
+      count = 0;
+      countDisplay.innerText = count;
+    }
+
+    function addToLogArea(text) {
+      const logArea = document.getElementById("logArea");
+      const entry = document.createElement("div");
+      entry.className = "log-entry";
+      entry.innerText = text;
+      logArea.prepend(entry);
+    }
+
+    function saveLog(entry) {
+      let logs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      logs.unshift(entry);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+      if (logs.length >= MAX_LOGS) {
+        document.getElementById('download').style.display = 'block';
+      }
+    }
+
+    function downloadLogs() {
+      const logs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      if (logs.length === 0) return;
+
+      const blob = new Blob([logs.join('\n')], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'mantra_logs.txt';
+      link.click();
+      URL.revokeObjectURL(url);
+
+      localStorage.removeItem(STORAGE_KEY);
+      document.getElementById('logArea').innerHTML = '';
+      document.getElementById('download').style.display = 'none';
+    }
+
+    function loadLogs() {
+      const logs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      logs.forEach(entry => addToLogArea(entry));
+      if (logs.length >= MAX_LOGS) {
+        document.getElementById('download').style.display = 'block';
+      }
+    }
+
+    window.onload = () => {
+      loadDropdown();
+      loadLogs();
+      countDisplay.innerText = count;
+    };
+  </script>
+</body>
+</html>
